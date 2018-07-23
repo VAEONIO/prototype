@@ -20,13 +20,18 @@ public:
   /**
    * @brief The table definition for the profiles.
    */
-  typedef eosio::multi_index<N(profiles), profile> profiles;
+  typedef eosio::multi_index<N(profiles), profile> profiles_idx;
 
   /// @abi action
   /// Create a new profile
-  void create(const account_name& account);
+  void create(const account_name& account, const std::string& first_name,
+              const std::string& last_name);
 
   /// @abi action
   /// Remove a profile
   void remove(const account_name& account);
+
+  /// @abi action
+  /// Print all profiles
+  void print();
 };

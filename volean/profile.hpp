@@ -6,7 +6,7 @@ public:
 
   /**
    * @brief Basic profile information
-   * @abi table basic i64
+   * @abi table profile i64
    */
   struct profile {
     account_name account;
@@ -25,4 +25,8 @@ public:
   /// @abi action
   /// Create a new profile
   void create(const account_name& account);
+
+  /// @abi action
+  /// Remove a profile
+  void remove(const account_name& account);
 };

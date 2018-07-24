@@ -1,5 +1,10 @@
 #!/bin/bash
 
+eos_bin_dir=/usr/local/eosio/bin
+# device to pipe output to
+keosd_output_device=/dev/ttys016 
+nodeos_output_device=/dev/ttys012 
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 runtime_dir=$DIR/../runtime
@@ -11,13 +16,9 @@ $DIR/create_config.sh $runtime_dir/config.ini $runtime_dir/wallets
 
 keosd_server_address="localhost:8899"
 config_dir="--config-dir $runtime_dir"
-cleos="/usr/local/eosio/bin/cleos --wallet-url=http://$keosd_server_address"
-keosd="/usr/local/eosio/bin/keosd"
-nodeos="/usr/local/eosio/bin/nodeos"
-
-# pipe output to different device
-keosd_output_device=/dev/ttys016 
-nodeos_output_device=/dev/ttys012 
+cleos="$eos_bin_dir/cleos --wallet-url=http://$keosd_server_address"
+keosd="$eos_bin_dir/keosd"
+nodeos="$eos_bin_dir/nodeos"
 
 # start keosd
 pkill keosd
@@ -31,7 +32,6 @@ $nodeos -e -p eosio --plugin eosio::chain_api_plugin --plugin eosio::history_api
 sleep 1
 
 accounts=(flo andi volean)
-#accounts=(flo)
 wallet_passwords=()
 
 for account in "${accounts[@]}" 

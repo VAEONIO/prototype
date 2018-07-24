@@ -18,9 +18,22 @@ void volean::create(const account_name& account, const std::string& first_name,
 void volean::remove(const account_name& account) {
   require_auth(account);
   profiles_idx profiles(_self, _self);
-  auto p = profiles.find(account);
-  eosio_assert(p != profiles.end(), "profile does not exist");
-  profiles.erase(p);
+  auto profile = profiles.find(account);
+  eosio_assert(profile != profiles.end(), "profile does not exist");
+  profiles.erase(profile);
+}
+
+void volean::update(const account_name& account, const std::string& first_name,
+                    const std::string& last_name) {
+  require_auth(account);
+  profiles_idx profiles(_self, _self);
+  auto profile = profiles.find(account);
+  eosio_assert(profile != profiles.end(), "profile does not exist");
+
+  profiles.modify(profile, _self, [&](auto& p) {
+    p.first_name = first_name;
+    p.last_name = last_name;
+  });
 }
 
 void volean::print() {
@@ -30,4 +43,4 @@ void volean::print() {
   }
 }
 
-EOSIO_ABI(volean, (create)(remove)(print))
+EOSIO_ABI(volean, (create)(remove)(update)(print))

@@ -1,11 +1,12 @@
 #!/bin/bash
 
-eos_bin_dir=/usr/local/eosio/bin
 # device to pipe output to
-keosd_output_device=/dev/ttys016 
-nodeos_output_device=/dev/ttys012 
+keosd_output_device=/dev/ttys016
+nodeos_output_device=/dev/ttys018
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
+source $DIR/vars.sh
 
 runtime_dir=$DIR/../runtime
 
@@ -14,11 +15,7 @@ mkdir -p $runtime_dir/wallets
 
 $DIR/create_config.sh $runtime_dir/config.ini $runtime_dir/wallets
 
-keosd_server_address="localhost:8899"
 config_dir="--config-dir $runtime_dir"
-cleos="$eos_bin_dir/cleos --wallet-url=http://$keosd_server_address"
-keosd="$eos_bin_dir/keosd"
-nodeos="$eos_bin_dir/nodeos"
 
 # start keosd
 pkill keosd
@@ -31,7 +28,7 @@ $nodeos -e -p eosio --plugin eosio::chain_api_plugin --plugin eosio::history_api
 # wait for nodeos to start
 sleep 1
 
-accounts=(flo andi volean)
+accounts=(flo andi vol.token vol.profile)
 wallet_passwords=()
 
 for account in "${accounts[@]}" 
@@ -56,3 +53,20 @@ do
 
   $cleos create account eosio $account $public_key $public_key > /dev/null
 done
+
+#token contract
+$cleos set contract vol.token $DIR/../../eos/build/contracts/eosio.token
+$cleos push action vol.token create '[ "vol.token", "10000.0000 VOL"]' -p vol.token
+
+#profile contract
+mkdir -p $DIR/../build/profile
+
+# hack because of buggy eosiocpp
+cp -Rf $DIR/../volean $DIR/../../eos/contracts
+cd $DIR/../../eos
+$eosiocpp -g $DIR/../build/profile/profile.abi contracts/volean/profile.hpp
+
+#/usr/local/eosio/bin/eosiocpp -g $DIR/../build/profile/profile.abi $DIR/../volean/profile.hpp
+$eosiocpp -o $DIR/../build/profile/profile.wast $DIR/../volean/profile.cpp
+
+$cleos set contract vol.profile $DIR/../build/profile

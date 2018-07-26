@@ -1,3 +1,8 @@
+const execute = require("./common.js").execute;
+const getAuthorization = require("./common.js").getAuthorization;
+const handleError = require("./common.js").handleError;
+const getTableRowsInternal = require("./common.js").getTableRowsInternal;
+
 class profile {
   constructor(account, firstName, lastName) {
     this.account = account;
@@ -9,19 +14,13 @@ class profile {
 flo = new profile("flo", "Flo", "GG");
 andi = new profile("andi", "Andi", "Miko");
 
-function getAuthorization(profile) {
-  return {
-    authorization: profile.account + "@active"
-  };
-}
-
 function createOrUpdateProfile(func, profile) {
   func(
     profile.account,
     profile.firstName,
     profile.lastName,
-    getAuthorization(profile)
-  );
+    getAuthorization(profile.account)
+  ).catch(handleError);
 }
 
 function createProfile(contract, profile) {
@@ -33,45 +32,40 @@ function updateProfile(contract, profile) {
 }
 
 function removeProfile(contract, profile) {
-  contract.remove(profile.account, getAuthorization(profile));
+  contract.remove(profile.account, getAuthorization(profile.account));
 }
 
-function handleError(error) {
-  console.log(error);
-}
-
-function execute(eos, callback) {
-  eos
-    .contract("vol.profile")
-    .then(callback)
-    .catch(handleError);
-}
-
-function executeAll(eos, callback, profiles) {
-  execute(eos, profile => {
+function executeAll(callback, profiles) {
+  execute("vol.profile", profile => {
     for (let p of profiles) {
       callback(profile, p);
     }
   });
 }
 
-function create(eos) {
-  executeAll(eos, createProfile, [flo, andi]);
+function create() {
+  executeAll(createProfile, [flo, andi]);
 }
 
-function update(eos) {
-  executeAll(eos, updateProfile, [
+function update() {
+  executeAll(updateProfile, [
     new profile("flo", "Florian", "GG"),
     new profile("andi", "Andreas", "Miko")
   ]);
 }
 
-function remove(eos) {
-  executeAll(eos, removeProfile, [flo, andi]);
+function remove() {
+  executeAll(removeProfile, [flo, andi]);
 }
 
-function print(eos) {
-  execute(eos, profile => profile.print(getAuthorization(flo)));
+function print() {
+  execute(profile =>
+    profile.print(getAuthorization(flo.account)).catch(handleError)
+  );
 }
 
-module.exports = { create, update, remove, print };
+function getTableRows(callback) {
+  getTableRowsInternal(callback, "vol.profile", "vol.profile", "profile");
+}
+
+module.exports = { create, update, remove, print, getTableRows };

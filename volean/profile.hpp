@@ -20,7 +20,7 @@ public:
   /**
    * @brief The table definition for the profiles.
    */
-  typedef eosio::multi_index<N(profiles), profile> profiles_idx;
+  typedef eosio::multi_index<N(profile), profile> profiles_idx;
 
   /// @abi action
   /// Create a new profile

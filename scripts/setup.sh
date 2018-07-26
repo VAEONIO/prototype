@@ -4,16 +4,19 @@
 keosd_output_device=/dev/ttys016
 nodeos_output_device=/dev/ttys018
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-source $DIR/vars.sh
+source $dir/vars.sh
 
-runtime_dir=$DIR/../runtime
+runtime_dir=$dir/../runtime
+build_dir=$dir/../build
 
 rm -rf $runtime_dir
+rm -rf $build_dir
 mkdir -p $runtime_dir/wallets
+mkdir -p $build_dir
 
-$DIR/create_config.sh $runtime_dir/config.ini $runtime_dir/wallets
+$dir/create_config.sh $runtime_dir/config.ini $runtime_dir/wallets
 
 config_dir="--config-dir $runtime_dir"
 
@@ -46,6 +49,9 @@ do
   private_key=$(echo $keys | cut -d " " -f 3)
   public_key=$(echo $keys | cut -d " " -f 6)
   echo "key created - " $private_key " - " $public_key
+
+  echo $private_key >> $build_dir/private_keys.txt
+
   $cleos wallet import -n $account --private-key $private_key > /dev/null
 
   #import eosio private key
@@ -55,18 +61,17 @@ do
 done
 
 #token contract
-$cleos set contract vol.token $DIR/../../eos/build/contracts/eosio.token
-$cleos push action vol.token create '[ "vol.token", "10000.0000 VOL"]' -p vol.token
+$cleos set contract vol.token $dir/../../eos/build/contracts/eosio.token
 
 #profile contract
-mkdir -p $DIR/../build/profile
+mkdir -p $build_dir/profile
 
 # hack because of buggy eosiocpp
-cp -Rf $DIR/../volean $DIR/../../eos/contracts
-cd $DIR/../../eos
-$eosiocpp -g $DIR/../build/profile/profile.abi contracts/volean/profile.hpp
+cp -Rf $dir/../volean $dir/../../eos/contracts
+cd $dir/../../eos
+$eosiocpp -g $build_dir/profile/profile.abi contracts/volean/profile.hpp
 
-#/usr/local/eosio/bin/eosiocpp -g $DIR/../build/profile/profile.abi $DIR/../volean/profile.hpp
-$eosiocpp -o $DIR/../build/profile/profile.wast $DIR/../volean/profile.cpp
+#/usr/local/eosio/bin/eosiocpp -g $dir/../build/profile/profile.abi $dir/../volean/profile.hpp
+$eosiocpp -o $build_dir/profile/profile.wast $dir/../volean/profile.cpp
 
-$cleos set contract vol.profile $DIR/../build/profile
+$cleos set contract vol.profile $build_dir/profile

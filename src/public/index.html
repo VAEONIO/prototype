@@ -13,22 +13,28 @@
   </head>
   <body>
     <div class="container">
-      <h4>Profiles</h4>
-      <div id="profiles"></div>
-      <form id="action">
-        <div class="row">
-        <div class="six columns">
-          <label for="actionInput">Enter action</label>
-          <input class="u-full-width" type="text" placeholder="" id="actionInput" value="">
+      <div class="row">
+        <h4>Profiles</h4>
+        <div id="profiles"></div>
+      </div>
+      <div class="row">
+        <form id="action">
+          <div class="six columns">
+            <div id="actionInputContainer"></div>
           </div>
-        <div class="six columns">
-          <label for="actions">Available Actions</label>
-          <select id="actions" class="u-full-width">
-          </select>
-        </div>
-        <input class="button-primary" type="submit" value="Execute">
+          <div class="six columns">
+            <label for="actions">Available Actions</label>
+            <select id="actions" class="u-full-width"></select>
+            <input class="button-primary" form="action" type="submit" value="Execute">
+          </div>
+        </form>
+      </div>
+      <div class="row">
+        <pre><code id="cmd"></code></pre>
+      </div>
+      <div class="row">
         <pre><code id="error"></code></pre>
-      </form>
+      </div>
     </div>
   </body>
 </html>

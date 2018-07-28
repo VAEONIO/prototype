@@ -15,11 +15,11 @@ function handleError(error) {
   console.log(error);
 }
 
-function execute(contractName, callback) {
+function execute(contractName, callback, errorHandler) {
   eos
     .contract(contractName)
     .then(callback)
-    .catch(handleError);
+    .catch(errorHandler !== undefined ? errorHandler : handleError);
 }
 
 function getAuthorization(account) {

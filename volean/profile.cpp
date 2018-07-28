@@ -1,7 +1,5 @@
 #include "profile.hpp"
 
-// using namespace eosio;
-
 void volean::create(const account_name& account, const std::string& first_name,
                     const std::string& last_name) {
   require_auth(account);
@@ -36,11 +34,4 @@ void volean::update(const account_name& account, const std::string& first_name,
   });
 }
 
-void volean::print() {
-  profiles_idx profiles(_self, _self);
-  for (auto it = profiles.begin(); it != profiles.end(); ++it) {
-    eosio::print(it->first_name, " ", it->last_name, "\n");
-  }
-}
-
-EOSIO_ABI(volean, (create)(remove)(update)(print))
+EOSIO_ABI(volean, (create)(remove)(update))

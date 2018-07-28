@@ -35,8 +35,4 @@ public:
   /// Update a profile
   void update(const account_name& account, const std::string& first_name,
               const std::string& last_name);
-
-  /// @abi action
-  /// Print all profiles
-  void print();
 };

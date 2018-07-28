@@ -21,7 +21,9 @@ app.use("", express.static(__dirname + "/public"));
 
 io.on("connection", function(socket) {
   setInterval(function() {
-    profile.getTableRows(profiles => socket.emit("update", profiles));
+    common.getTables((tables, requests) =>
+      socket.emit("update", tables, requests)
+    );
   }, 1000);
 
   function errorHandler(error) {

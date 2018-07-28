@@ -1,9 +1,10 @@
 var socket = io();
 
 class Argument {
-  constructor(name, value) {
+  constructor(name, value, isString = false) {
     this.name = name;
     this.value = value;
+    this.isString = isString;
   }
 }
 
@@ -46,23 +47,53 @@ var actions = [
     "remove",
     [new Argument("account_name", "flo")],
     "flo@active"
+  ),
+  new Action(
+    "token",
+    "vol.token",
+    "create",
+    [
+      new Argument("issuer", "vol.token"),
+      new Argument("maximum supply", "100000 VOL", true)
+    ],
+    "vol.token@active"
+  ),
+  new Action(
+    "token",
+    "vol.token",
+    "issue",
+    [
+      new Argument("to", "flo"),
+      new Argument("quantity", "100 VOL", true),
+      new Argument("memo", "Here ya go bro :-*", true)
+    ],
+    "vol.token@active"
+  ),
+  new Action(
+    "token",
+    "vol.token",
+    "transfer",
+    [
+      new Argument("from", "flo"),
+      new Argument("to", "andi"),
+      new Argument("quantity", "10 VOL", true),
+      new Argument("memo", "with love", true)
+    ],
+    "flo@active"
+  ),
+  new Action(
+    "request",
+    "vol.request",
+    "create",
+    [
+      new Argument("requester", "flo"),
+      new Argument("requestee", "andi"),
+      new Argument("payment", "100 VOL", true),
+      new Argument("memo", "gimme dat data", true)
+    ],
+    "flo@active"
   )
 ];
-//profile: {
-//  name: "token",
-//  account: "vol.token",
-//  actions: {
-//    create: {
-//      command: "vol.token 100000 VOL vol.token@active"
-//    },
-//    issue: {
-//      command: "flo 1000 VOL flo@active"
-//    },
-//    remove: {
-//      command: "flo flo@active"
-//    }
-//  }
-//}
 
 $(document).ready(function() {
   for (let i = 0; i < actions.length; i++) {
@@ -80,19 +111,24 @@ $(document).ready(function() {
 
     let cmd = action.contractAccount + " " + action.name;
     $("#actionInputContainer > input").each(function() {
-      cmd += " " + $(this).val();
+      if ($(this).data("arg").isString) {
+        cmd += ' "' + $(this).val() + '"';
+      } else {
+        cmd += " " + $(this).val();
+      }
     });
     $("#cmd").text(cmd);
   }
 
-  function createActionFieldInput(name, value) {
-    const id = "actionInput_" + name;
+  function createActionFieldInput(arg) {
+    const id = "actionInput_" + arg.name;
     const $label = $("<label></label>")
-      .text(name)
+      .text(arg.name)
       .attr("for", id);
     const $input = $("<input  class='u-full-width' type='text'></input>")
-      .val(value)
-      .attr("id", id);
+      .val(arg.value)
+      .attr("id", id)
+      .data("arg", arg);
     $input.on("input", setCmd);
     $("#actionInputContainer").append($label);
     $("#actionInputContainer").append($input);
@@ -105,9 +141,9 @@ $(document).ready(function() {
       .find(":selected")
       .data("action");
     for (let i = 0; i < action.args.length; i++) {
-      createActionFieldInput(action.args[i].name, action.args[i].value);
+      createActionFieldInput(action.args[i]);
     }
-    createActionFieldInput("authentification", action.auth);
+    createActionFieldInput(new Argument("authentification", action.auth));
   }
 
   $("#actions").change(updateAction);
@@ -130,35 +166,39 @@ $(document).ready(function() {
       args: args.slice(0, -1),
       auth: args[args.length - 1]
     };
-    console.log(data);
     socket.emit("action", data);
     return false;
   });
 
-  socket.on("update", function(profiles) {
-    var $table = $("<table></table>").attr({ id: "profiles" });
+  function createTable(name, data) {
+    var $table = $("<table></table>").attr({ id: name });
     var $head = $("<thead></thead>");
     var $body = $("<tbody></tbody>");
     $table.append($head);
     $table.append($body);
 
-    for (var i = 0; i < profiles.rows.length; i++) {
+    for (var i = 0; i < data.rows.length; i++) {
       if (i === 0) {
         var $row = $("<tr></tr>").appendTo($head);
-        for (var key in profiles.rows[i]) {
+        for (var key in data.rows[i]) {
           $("<td></td>")
             .text(key)
             .appendTo($row);
         }
       }
       var $row = $("<tr></tr>").appendTo($body);
-      for (var key in profiles.rows[i]) {
+      for (var key in data.rows[i]) {
         $("<td></td>")
-          .text(profiles.rows[i][key])
+          .text(data.rows[i][key])
           .appendTo($row);
       }
     }
-    $("#profiles").replaceWith($table);
+    $("#" + name).replaceWith($table);
+  }
+
+  socket.on("update", function(profiles, requests) {
+    createTable("profiles", profiles);
+    createTable("requests", requests);
   });
 
   socket.on("err", function(error) {

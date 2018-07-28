@@ -65,7 +65,28 @@ function print() {
 }
 
 function getTableRows(callback) {
-  getTableRowsInternal(callback, "vol.profile", "vol.profile", "profile");
+  getTableRowsInternal("vol.profile", "vol.profile", "profile", profiles => {
+    if (profiles.rows.length > 0) {
+      const promises = [];
+      for (var i = 0; i < profiles.rows.length; i++) {
+        promises.push(
+          getTableRowsInternal(
+            "vol.token",
+            profiles.rows[i].account,
+            "accounts"
+          )
+        );
+      }
+      Promise.all(promises)
+        .then(function(values) {
+          for (var i = 0; i < profiles.rows.length; i++) {
+            profiles.rows[i].balance = values[i].rows[0].balance;
+          }
+          callback(profiles);
+        })
+        .catch(handleError);
+    }
+  });
 }
 
 module.exports = { create, update, remove, print, getTableRows };

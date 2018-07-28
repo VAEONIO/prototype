@@ -28,16 +28,61 @@ function getAuthorization(account) {
   };
 }
 
-function getTableRowsInternal(callback, code, scope, table) {
-  eos
-    .getTableRows({
-      code: code,
-      scope: scope,
-      table: table,
-      json: true
-    })
-    .then(callback)
-    .catch(handleError);
+function getTableRowsInternal(code, scope, table, callback) {
+  const promise = eos.getTableRows({
+    code: code,
+    scope: scope,
+    table: table,
+    json: true
+  });
+  if (callback === undefined) {
+    return promise;
+  } else {
+    promise.then(callback).catch(handleError);
+  }
+}
+
+function getTables(callback) {
+  getTableRowsInternal("vol.profile", "vol.profile", "profile", profiles => {
+    if (profiles.rows.length > 0) {
+      const promises = [];
+      for (var i = 0; i < profiles.rows.length; i++) {
+        promises.push(
+          getTableRowsInternal(
+            "vol.token",
+            profiles.rows[i].account,
+            "accounts"
+          )
+        );
+        promises.push(
+          getTableRowsInternal(
+            "vol.request",
+            profiles.rows[i].account,
+            "request"
+          )
+        );
+      }
+      Promise.all(promises)
+        .then(function(values) {
+          const requests = {
+            rows: []
+          };
+
+          for (var i = 0; i < values.length; i++) {
+            const rows = values[i].rows;
+            if (i % 2 === 0) {
+              profiles.rows[i / 2].balance = rows[0].balance;
+            } else {
+              for (var j = 0; j < rows.length; j++) {
+                requests.rows.push(rows[j]);
+              }
+            }
+          }
+          callback(profiles, requests);
+        })
+        .catch(handleError);
+    }
+  });
 }
 
 module.exports = {
@@ -45,5 +90,5 @@ module.exports = {
   execute,
   getAuthorization,
   handleError,
-  getTableRowsInternal
+  getTables
 };

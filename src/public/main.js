@@ -1,26 +1,24 @@
 var socket = io();
 
 class Argument {
-  constructor(name, value, isString = false) {
+  constructor(name, value) {
     this.name = name;
     this.value = value;
-    this.isString = isString;
   }
 }
 
 class Action {
-  constructor(contract, contractAccount, name, args, auth) {
+  constructor(contract, name, args, auth, description) {
     this.contract = contract;
-    this.contractAccount = contractAccount;
     this.name = name;
     this.args = args;
     this.auth = auth;
+    this.description = description;
   }
 }
 
 var actions = [
   new Action(
-    "profile",
     "vaeon",
     "createprof",
     [
@@ -29,10 +27,10 @@ var actions = [
       new Argument("last_name", { value: "GG", price: 0 }),
       new Argument("string_fields", [{ name: "Age", value: "HASH", price: 10 }])
     ],
-    "flo@active"
+    "flo@active",
+    "create profile"
   ),
   new Action(
-    "profile",
     "vaeon",
     "updateprof",
     [
@@ -43,81 +41,82 @@ var actions = [
         { name: "University", value: "HASH", price: 20 }
       ])
     ],
-    "flo@active"
+    "flo@active",
+    "update profile"
   ),
   new Action(
-    "profile",
     "vaeon",
     "removeprof",
     [new Argument("account_name", "flo")],
-    "flo@active"
+    "flo@active",
+    "remove profile"
   ),
   new Action(
-    "token",
     "vae.token",
     "create",
     [
       new Argument("issuer", "vae.token"),
-      new Argument("maximum supply", "100000 VAE", true)
+      new Argument("maximum supply", "100000 VAE")
     ],
-    "vae.token@active"
+    "vae.token@active",
+    "create token"
   ),
   new Action(
-    "token",
     "vae.token",
     "issue",
     [
       new Argument("to", "flo"),
-      new Argument("quantity", "100 VAE", true),
-      new Argument("memo", "Here ya go bro :-*", true)
+      new Argument("quantity", "100 VAE"),
+      new Argument("memo", "Here ya go bro :-*")
     ],
-    "vae.token@active"
+    "vae.token@active",
+    "issue token"
   ),
   new Action(
-    "token",
     "vae.token",
     "transfer",
     [
       new Argument("from", "flo"),
       new Argument("to", "andi"),
-      new Argument("quantity", "75 VAE", true),
-      new Argument("memo", "with love", true)
+      new Argument("quantity", "75 VAE"),
+      new Argument("memo", "with love")
     ],
-    "flo@active"
+    "flo@active",
+    "transfer token"
   ),
   new Action(
-    "request",
     "vaeon",
     "createreq",
     [
       new Argument("requester", "flo"),
       new Argument("requestee", "andi"),
-      new Argument("payment", "100 VAE", true),
-      new Argument("memo", "gimme dat data", true)
+      new Argument("payment", "100 VAE"),
+      new Argument("memo", "gimme dat data")
     ],
-    "flo@active"
+    "flo@active",
+    "create request"
   ),
   new Action(
-    "request",
     "vaeon",
     "acceptreq",
     [
       new Argument("requester", "flo"),
       new Argument("requestee", "andi"),
-      new Argument("memo", "cool!", true)
+      new Argument("memo", "cool!")
     ],
-    "andi@active"
+    "andi@active",
+    "create profile"
   ),
   new Action(
-    "request",
     "vaeon",
-    "rejectreq",
+    "accept request",
     [
       new Argument("requester", "flo"),
       new Argument("requestee", "andi"),
-      new Argument("memo", "not cool!", true)
+      new Argument("memo", "not cool!")
     ],
-    "andi@active"
+    "andi@active",
+    "reject request"
   )
 ];
 
@@ -125,7 +124,7 @@ $(document).ready(function() {
   for (let i = 0; i < actions.length; i++) {
     let action = actions[i];
     $option = $("<option></option>")
-      .text(action.contract + " " + action.name)
+      .text(action.description)
       .data("action", action);
     $("#actions").append($option);
   }
@@ -135,14 +134,15 @@ $(document).ready(function() {
       .find(":selected")
       .data("action");
 
-    let cmd = action.contractAccount + " " + action.name;
-    $("#actionInputContainer > input").each(function() {
-      if ($(this).data("arg").isString) {
-        cmd += ' "' + $(this).val() + '"';
-      } else {
-        cmd += " " + $(this).val();
+    let cmd = action.contract + " " + action.name + " '";
+    for (let i = 0; i < action.args.length; i++) {
+      let arg = action.args[i];
+      if (i > 0) {
+        cmd += ", ";
       }
-    });
+      cmd += '"' + arg.name + '": ' + $("#actionInput_" + arg.name).val();
+    }
+    cmd += "' " + $("#actionInput_authentification").val();
     $("#cmd").text(cmd);
   }
 
@@ -187,7 +187,7 @@ $(document).ready(function() {
       args.push(JSON.parse($(this).val()));
     });
     var data = {
-      contract: action.contractAccount,
+      contract: action.contract,
       action: action.name,
       args: args.slice(0, -1),
       auth: args[args.length - 1]
@@ -225,17 +225,10 @@ $(document).ready(function() {
     $("#tableContainer").append($table);
   }
 
-  let tables_hash;
-
   socket.on("update", function(tables) {
-    const tables_hash_new = JSON.stringify(tables);
-    if (tables_hash != tables_hash_new) {
-      console.log(tables);
-      tables_hash = tables_hash_new;
-      $("#tableContainer").empty();
-      for (let name in tables) {
-        createTable(name, tables[name]);
-      }
+    $("#tableContainer").empty();
+    for (let name in tables) {
+      createTable(name, tables[name]);
     }
   });
 

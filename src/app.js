@@ -22,8 +22,15 @@ app.use(function(req, res, next) {
 app.use("", express.static(__dirname + "/public"));
 
 io.on("connection", function(socket) {
+  let tables_hash;
   setInterval(function() {
-    communication.getTables(tables => socket.emit("update", tables));
+    communication.getTables(tables => {
+      const tables_hash_new = JSON.stringify(tables);
+      if (tables_hash != tables_hash_new) {
+        tables_hash = tables_hash_new;
+        socket.emit("update", tables);
+      }
+    });
   }, 1000);
 
   function errorHandler(error) {

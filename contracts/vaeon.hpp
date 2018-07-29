@@ -1,6 +1,7 @@
 #pragma once
 
 #include <eosiolib/eosio.hpp>
+//#include <eosio.token.hpp>
 
 #include "../eosio.token/eosio.token.hpp"
 #include "struct.hpp"

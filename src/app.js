@@ -3,8 +3,7 @@ const app = express();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
 
-const profile = require("./profile.js");
-const common = require("./common.js");
+const communication = require("./communication.js");
 const init = require("./init.js");
 
 init();
@@ -24,7 +23,7 @@ app.use("", express.static(__dirname + "/public"));
 
 io.on("connection", function(socket) {
   setInterval(function() {
-    common.getTables(tables => socket.emit("update", tables));
+    communication.getTables(tables => socket.emit("update", tables));
   }, 1000);
 
   function errorHandler(error) {
@@ -32,7 +31,7 @@ io.on("connection", function(socket) {
   }
 
   socket.on("action", function(data) {
-    common.execute(
+    communication.execute(
       data.contract,
       data.action,
       errorHandler,

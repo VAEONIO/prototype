@@ -2,9 +2,11 @@
 
 #include "common.hpp"
 
+namespace vaeon {
+
 void has_enough_assets(const account_name& requester, const eosio::asset& payment) {
-  eosio::token t(N(vol.token));
-  eosio::asset asset = t.get_balance(requester, volean::get_symbol());
+  eosio::token t(N(vae.token));
+  eosio::asset asset = t.get_balance(requester, get_symbol());
   std::string error_message = "not enough tokens (" + std::to_string(payment.amount) +
                               " requested, " + std::to_string(asset.amount) + " available)";
   eosio_assert(payment.symbol == asset.symbol, "wrong token");
@@ -23,8 +25,8 @@ void request::create(const account_name& requester, const account_name& requeste
 
   // todo require_recipient
 
-  SEND_INLINE_ACTION(eosio::token(N(vol.token)), transfer, {requester, N(active)},
-                     {requester, N(vol.cash), payment, memo});
+  SEND_INLINE_ACTION(eosio::token(N(vae.token)), transfer, {requester, N(active)},
+                     {requester, N(vae.cash), payment, memo});
 
   requests.emplace(_self, [&](auto& r) {
     r.requester = requester;
@@ -41,8 +43,8 @@ void request::accept(const account_name& requester, const account_name& requeste
   auto r = requests.find(requestee);
   eosio_assert(r != requests.end(), "request does not exist");
 
-  SEND_INLINE_ACTION(eosio::token(N(vol.token)), transfer, {N(vol.cash), N(active)},
-                     {N(vol.cash), requestee, r->payment, memo});
+  SEND_INLINE_ACTION(eosio::token(N(vae.token)), transfer, {N(vae.cash), N(active)},
+                     {N(vae.cash), requestee, r->payment, memo});
   requests.erase(r);
 }
 
@@ -53,9 +55,10 @@ void request::reject(const account_name& requester, const account_name& requeste
   auto r = requests.find(requestee);
   eosio_assert(r != requests.end(), "request does not exist");
 
-  SEND_INLINE_ACTION(eosio::token(N(vol.token)), transfer, {N(vol.cash), N(active)},
-                     {N(vol.cash), requester, r->payment, memo});
+  SEND_INLINE_ACTION(eosio::token(N(vae.token)), transfer, {N(vae.cash), N(active)},
+                     {N(vae.cash), requester, r->payment, memo});
   requests.erase(r);
 }
 
 EOSIO_ABI(request, (create)(accept)(reject))
+} // namespace vaeon

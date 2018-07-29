@@ -1,38 +1,38 @@
 const fs = require("fs");
 
-const common = require("./common.js");
+const communication = require("./communication.js");
 
 module.exports = () => {
   if (fs.existsSync(__dirname + "/../build/NEW")) {
-    //fs.unlinkSync(__dirname + "/../build/NEW");
-    common.execute(
-      "vol.token",
+    fs.unlinkSync(__dirname + "/../build/NEW");
+    communication.execute(
+      "vae.token",
       "create",
       undefined,
-      "vol.token@active",
-      "vol.token",
-      "100000 VOL"
+      "vae.token@active",
+      "vae.token",
+      "100000 VAE"
     );
-    common.execute(
-      "vol.token",
+    communication.execute(
+      "vae.token",
       "issue",
       undefined,
-      "vol.token@active",
+      "vae.token@active",
       "flo",
-      "500 VOL",
+      "500 VAE",
       "memo"
     );
-    common.execute(
-      "vol.token",
+    communication.execute(
+      "vae.token",
       "issue",
       undefined,
-      "vol.token@active",
+      "vae.token@active",
       "andi",
-      "500 VOL",
+      "500 VAE",
       "memo"
     );
-    common.execute(
-      "vol.profile",
+    communication.execute(
+      "vae.profile",
       "create",
       undefined,
       "flo@active",
@@ -53,8 +53,8 @@ module.exports = () => {
         }
       ]
     );
-    common.execute(
-      "vol.profile",
+    communication.execute(
+      "vae.profile",
       "create",
       undefined,
       "andi@active",

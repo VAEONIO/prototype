@@ -61,10 +61,10 @@ function getTable(constract, table) {
 }
 
 function getTables(callback) {
-  const profile_promise = getTable("vol.profile", "profiles");
-  const profile_field_promise = getTable("vol.profile", "fields");
-  const token_promise = getTable("vol.token", "accounts");
-  const request_promise = getTable("vol.request", "request");
+  const profile_promise = getTable("vae.profile", "profiles");
+  const profile_field_promise = getTable("vae.profile", "fields");
+  const token_promise = getTable("vae.token", "accounts");
+  const request_promise = getTable("vae.request", "request");
 
   Promise.all([
     profile_promise,
@@ -117,9 +117,6 @@ function getTables(callback) {
 }
 
 module.exports = {
-  eos,
   execute,
-  getAuthorization,
-  handleError,
   getTables
 };

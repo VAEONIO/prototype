@@ -31,7 +31,7 @@ $nodeos -e -p eosio --plugin eosio::chain_api_plugin --plugin eosio::history_api
 # wait for nodeos to start
 sleep 1
 
-accounts=(flo andi vol.token vol.profile vol.request vol.cash)
+accounts=(flo andi vae.token vae.profile vae.request vae.cash)
 declare -A passwords
 declare -A private_keys
 declare -A public_keys
@@ -64,39 +64,39 @@ for account in "${accounts[@]}"; do
 	$cleos create account eosio $account $public_key $public_key >/dev/null
 done
 
-$cleos wallet import -n vol.request --private-key ${private_keys[flo]} >/dev/null
+$cleos wallet import -n vae.request --private-key ${private_keys[flo]} >/dev/null
 
-$cleos set account permission flo active '{"threshold": 1,"keys": [{"key": "'${public_keys[vol.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vol.request","permission":"eosio.code"},"weight":1}]}' owner -p flo@active
-$cleos set account permission andi active '{"threshold": 1,"keys": [{"key": "'${public_keys[vol.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vol.request","permission":"eosio.code"},"weight":1}]}' owner -p andi@active
-$cleos set account permission vol.cash active '{"threshold": 1,"keys": [{"key": "'${public_keys[vol.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vol.request","permission":"eosio.code"},"weight":1}]}' owner -p vol.cash@active
+$cleos set account permission flo active '{"threshold": 1,"keys": [{"key": "'${public_keys[vae.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vae.request","permission":"eosio.code"},"weight":1}]}' owner -p flo@active
+$cleos set account permission andi active '{"threshold": 1,"keys": [{"key": "'${public_keys[vae.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vae.request","permission":"eosio.code"},"weight":1}]}' owner -p andi@active
+$cleos set account permission vae.cash active '{"threshold": 1,"keys": [{"key": "'${public_keys[vae.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vae.request","permission":"eosio.code"},"weight":1}]}' owner -p vae.cash@active
 
-$cleos set account permission vol.request active '{"threshold": 1,"keys": [{"key": "'${public_keys[vol.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vol.request","permission":"eosio.code"},"weight":1}]}' owner -p vol.request@active
+$cleos set account permission vae.request active '{"threshold": 1,"keys": [{"key": "'${public_keys[vae.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vae.request","permission":"eosio.code"},"weight":1}]}' owner -p vae.request@active
 
 #token contract
-$cleos set contract vol.token $dir/../../eos/build/contracts/eosio.token
+$cleos set contract vae.token $dir/../../eos/build/contracts/eosio.token
 
 #profile contract
 mkdir -p $build_dir/profile
 
 # hack because of buggy eosiocpp
-cp -Rf $dir/../volean $dir/../../eos/contracts
+cp -Rf $dir/../contracts $dir/../../eos/contracts
 cd $dir/../../eos
-$eosiocpp -g $build_dir/profile/profile.abi contracts/volean/profile.hpp
+$eosiocpp -g $build_dir/profile/profile.abi contracts/contracts/profile.hpp
 
-#/usr/local/eosio/bin/eosiocpp -g $dir/../build/profile/profile.abi $dir/../volean/profile.hpp
-$eosiocpp -o $build_dir/profile/profile.wast contracts/volean/profile.cpp
+#/usr/local/eosio/bin/eosiocpp -g $dir/../build/profile/profile.abi $dir/../contracts/profile.hpp
+$eosiocpp -o $build_dir/profile/profile.wast contracts/contracts/profile.cpp
 
-$cleos set contract vol.profile $build_dir/profile
+$cleos set contract vae.profile $build_dir/profile
 
 #request contract
 mkdir -p $build_dir/request
 
 # hack because of buggy eosiocpp
-$eosiocpp -g $build_dir/request/request.abi contracts/volean/request.hpp
+$eosiocpp -g $build_dir/request/request.abi contracts/contracts/request.hpp
 
-#/usr/local/eosio/bin/eosiocpp -g $dir/../build/profile/profile.abi $dir/../volean/profile.hpp
-$eosiocpp -o $build_dir/request/request.wast contracts/volean/request.cpp
+#/usr/local/eosio/bin/eosiocpp -g $dir/../build/profile/profile.abi $dir/../contracts/profile.hpp
+$eosiocpp -o $build_dir/request/request.wast contracts/contracts/request.cpp
 
-$cleos set contract vol.request $build_dir/request
+$cleos set contract vae.request $build_dir/request
 
 touch $build_dir/NEW

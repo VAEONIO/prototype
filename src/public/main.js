@@ -21,7 +21,7 @@ class Action {
 var actions = [
   new Action(
     "profile",
-    "vol.profile",
+    "vae.profile",
     "create",
     [
       new Argument("account", "flo"),
@@ -33,7 +33,7 @@ var actions = [
   ),
   new Action(
     "profile",
-    "vol.profile",
+    "vae.profile",
     "update",
     [
       new Argument("account", "flo"),
@@ -47,59 +47,59 @@ var actions = [
   ),
   new Action(
     "profile",
-    "vol.profile",
+    "vae.profile",
     "remove",
     [new Argument("account_name", "flo")],
     "flo@active"
   ),
   new Action(
     "token",
-    "vol.token",
+    "vae.token",
     "create",
     [
-      new Argument("issuer", "vol.token"),
-      new Argument("maximum supply", "100000 VOL", true)
+      new Argument("issuer", "vae.token"),
+      new Argument("maximum supply", "100000 VAE", true)
     ],
-    "vol.token@active"
+    "vae.token@active"
   ),
   new Action(
     "token",
-    "vol.token",
+    "vae.token",
     "issue",
     [
       new Argument("to", "flo"),
-      new Argument("quantity", "100 VOL", true),
+      new Argument("quantity", "100 VAE", true),
       new Argument("memo", "Here ya go bro :-*", true)
     ],
-    "vol.token@active"
+    "vae.token@active"
   ),
   new Action(
     "token",
-    "vol.token",
+    "vae.token",
     "transfer",
     [
       new Argument("from", "flo"),
       new Argument("to", "andi"),
-      new Argument("quantity", "75 VOL", true),
+      new Argument("quantity", "75 VAE", true),
       new Argument("memo", "with love", true)
     ],
     "flo@active"
   ),
   new Action(
     "request",
-    "vol.request",
+    "vae.request",
     "create",
     [
       new Argument("requester", "flo"),
       new Argument("requestee", "andi"),
-      new Argument("payment", "100 VOL", true),
+      new Argument("payment", "100 VAE", true),
       new Argument("memo", "gimme dat data", true)
     ],
     "flo@active"
   ),
   new Action(
     "request",
-    "vol.request",
+    "vae.request",
     "accept",
     [
       new Argument("requester", "flo"),
@@ -110,7 +110,7 @@ var actions = [
   ),
   new Action(
     "request",
-    "vol.request",
+    "vae.request",
     "reject",
     [
       new Argument("requester", "flo"),

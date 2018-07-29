@@ -2,16 +2,18 @@
 
 #include <functional>
 
+namespace vaeon {
+
 using namespace std::placeholders;
 
-void update_field(volean::field& old_field, const named_string_field& new_field) {
+void update_field(profile_contract::field& old_field, const named_string_field& new_field) {
   old_field.idx = std::hash<std::string>{}(new_field.name);
   old_field.name = new_field.name;
   old_field.value = new_field.value;
   old_field.price = new_field.price;
 }
 
-void create_or_update(const account_name& payer, volean::field_idx& fields,
+void create_or_update(const account_name& payer, profile_contract::field_idx& fields,
                       const std::vector<named_string_field>& string_fields) {
   std::hash<std::string> hash_fn;
   for (const auto& string_field : string_fields) {
@@ -25,9 +27,9 @@ void create_or_update(const account_name& payer, volean::field_idx& fields,
   }
 }
 
-void volean::create(const account_name& account, const string_field& first_name,
-                    const string_field& last_name,
-                    const std::vector<named_string_field>& string_fields) {
+void profile_contract::create(const account_name& account, const string_field& first_name,
+                              const string_field& last_name,
+                              const std::vector<named_string_field>& string_fields) {
   require_auth(account);
   profile_idx profiles(_self, account);
   eosio_assert(profiles.find(account) == profiles.end(), "profile already exists");
@@ -45,7 +47,7 @@ void volean::create(const account_name& account, const string_field& first_name,
   create_or_update(_self, fields, string_fields);
 }
 
-void volean::remove(const account_name& account) {
+void profile_contract::remove(const account_name& account) {
   require_auth(account);
   profile_idx profiles(_self, account);
   auto profile = profiles.find(account);
@@ -60,9 +62,9 @@ void volean::remove(const account_name& account) {
   }
 }
 
-void volean::update(const account_name& account, const string_field& first_name,
-                    const string_field& last_name,
-                    const std::vector<named_string_field>& string_fields) {
+void profile_contract::update(const account_name& account, const string_field& first_name,
+                              const string_field& last_name,
+                              const std::vector<named_string_field>& string_fields) {
   require_auth(account);
   profile_idx profiles(_self, account);
   auto profile = profiles.find(account);
@@ -78,4 +80,5 @@ void volean::update(const account_name& account, const string_field& first_name,
   create_or_update(_self, fields, string_fields);
 }
 
-EOSIO_ABI(volean, (create)(remove)(update))
+EOSIO_ABI(profile_contract, (create)(remove)(update))
+} // namespace vaeon

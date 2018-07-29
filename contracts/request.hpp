@@ -2,6 +2,8 @@
 
 #include "../eosio.token/eosio.token.hpp"
 
+namespace vaeon {
+
 class request : public eosio::contract {
 public:
   request(account_name self) : contract(self) {}
@@ -34,3 +36,5 @@ public:
   void reject(const account_name& requester, const account_name& requestee,
               const std::string& memo);
 };
+
+} // namespace vaeon

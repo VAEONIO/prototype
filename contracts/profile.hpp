@@ -2,6 +2,8 @@
 
 // Templating is not supported by the .abi generator currently.
 
+namespace vaeon {
+
 struct string_field {
   std::string value;
   int64_t price;
@@ -13,9 +15,9 @@ struct named_string_field {
   int64_t price;
 };
 
-class volean : public eosio::contract {
+class profile_contract : public eosio::contract {
 public:
-  volean(account_name self) : contract(self) {}
+  profile_contract(account_name self) : contract(self) {}
 
   /**
    * @abi table fields i64
@@ -51,7 +53,6 @@ public:
   /// Create a new profile
   void create(const account_name& account, const string_field& first_name,
               const string_field& last_name, const std::vector<named_string_field>& string_fields);
-  // const string_field& last_name);
 
   /// @abi action
   /// Remove a profile
@@ -62,3 +63,5 @@ public:
   void update(const account_name& account, const string_field& first_name,
               const string_field& last_name, const std::vector<named_string_field>& string_fields);
 };
+
+} // namespace vaeon

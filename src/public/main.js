@@ -24,9 +24,10 @@ var actions = [
     "vol.profile",
     "create",
     [
-      new Argument("account_name", "flo"),
-      new Argument("first_name", "Flo"),
-      new Argument("last_name", "GG")
+      new Argument("account", "flo"),
+      new Argument("first_name", { value: "Flo", price: 0 }),
+      new Argument("last_name", { value: "GG", price: 0 }),
+      new Argument("string_fields", [{ name: "Age", value: "HASH", price: 10 }])
     ],
     "flo@active"
   ),
@@ -35,9 +36,12 @@ var actions = [
     "vol.profile",
     "update",
     [
-      new Argument("account_name", "flo"),
-      new Argument("first_name", "Florian"),
-      new Argument("last_name", "G")
+      new Argument("account", "flo"),
+      new Argument("first_name", { value: "Florian", price: 0 }),
+      new Argument("last_name", { value: "HASH2", price: 5 }),
+      new Argument("string_fields", [
+        { name: "University", value: "HASH", price: 20 }
+      ])
     ],
     "flo@active"
   ),
@@ -76,7 +80,7 @@ var actions = [
     [
       new Argument("from", "flo"),
       new Argument("to", "andi"),
-      new Argument("quantity", "10 VOL", true),
+      new Argument("quantity", "75 VOL", true),
       new Argument("memo", "with love", true)
     ],
     "flo@active"
@@ -92,6 +96,28 @@ var actions = [
       new Argument("memo", "gimme dat data", true)
     ],
     "flo@active"
+  ),
+  new Action(
+    "request",
+    "vol.request",
+    "accept",
+    [
+      new Argument("requester", "flo"),
+      new Argument("requestee", "andi"),
+      new Argument("memo", "cool!", true)
+    ],
+    "andi@active"
+  ),
+  new Action(
+    "request",
+    "vol.request",
+    "reject",
+    [
+      new Argument("requester", "flo"),
+      new Argument("requestee", "andi"),
+      new Argument("memo", "not cool!", true)
+    ],
+    "andi@active"
   )
 ];
 
@@ -126,7 +152,7 @@ $(document).ready(function() {
       .text(arg.name)
       .attr("for", id);
     const $input = $("<input  class='u-full-width' type='text'></input>")
-      .val(arg.value)
+      .val(JSON.stringify(arg.value, null, 1))
       .attr("id", id)
       .data("arg", arg);
     $input.on("input", setCmd);
@@ -158,7 +184,7 @@ $(document).ready(function() {
 
     var args = [];
     $("#actionInputContainer > input").each(function() {
-      args.push($(this).val());
+      args.push(JSON.parse($(this).val()));
     });
     var data = {
       contract: action.contractAccount,
@@ -172,33 +198,45 @@ $(document).ready(function() {
 
   function createTable(name, data) {
     var $table = $("<table></table>").attr({ id: name });
+    var $caption = $("<caption></caption>").text(name);
     var $head = $("<thead></thead>");
     var $body = $("<tbody></tbody>");
+    $table.append($caption);
     $table.append($head);
     $table.append($body);
 
-    for (var i = 0; i < data.rows.length; i++) {
+    for (var i = 0; i < data.length; i++) {
       if (i === 0) {
         var $row = $("<tr></tr>").appendTo($head);
-        for (var key in data.rows[i]) {
+        for (var key in data[i]) {
           $("<td></td>")
             .text(key)
             .appendTo($row);
         }
       }
       var $row = $("<tr></tr>").appendTo($body);
-      for (var key in data.rows[i]) {
+      for (var key in data[i]) {
         $("<td></td>")
-          .text(data.rows[i][key])
+          .text(JSON.stringify(data[i][key], null, 1).replace(/"/g, ""))
           .appendTo($row);
       }
     }
-    $("#" + name).replaceWith($table);
+
+    $("#tableContainer").append($table);
   }
 
-  socket.on("update", function(profiles, requests) {
-    createTable("profiles", profiles);
-    createTable("requests", requests);
+  let tables_hash;
+
+  socket.on("update", function(tables) {
+    const tables_hash_new = JSON.stringify(tables);
+    if (tables_hash != tables_hash_new) {
+      console.log(tables);
+      tables_hash = tables_hash_new;
+      $("#tableContainer").empty();
+      for (let name in tables) {
+        createTable(name, tables[name]);
+      }
+    }
   });
 
   socket.on("err", function(error) {

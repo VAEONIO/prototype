@@ -1,11 +1,17 @@
 const Eos = require("eosjs");
 const fs = require("fs");
 
-const keyProvider = fs
-  .readFileSync(__dirname + "/../build/private_keys.txt")
-  .toString()
-  .split("\n");
-keyProvider.pop();
+function loadFile(path) {
+  const array = fs
+    .readFileSync(__dirname + path)
+    .toString()
+    .split("\n");
+  array.pop();
+  return array;
+}
+
+const keyProvider = loadFile("/../build/private_keys.txt");
+const accounts = loadFile("/../build/accounts.txt");
 
 eos = Eos({
   keyProvider: keyProvider
@@ -15,11 +21,15 @@ function handleError(error) {
   console.log(error);
 }
 
-function execute(contractName, callback, errorHandler) {
+function execute(contractName, action, errorHandler, auth, ...args) {
+  const handler = errorHandler !== undefined ? errorHandler : handleError;
+  args.push({ authorization: auth });
   eos
     .contract(contractName)
-    .then(callback)
-    .catch(errorHandler !== undefined ? errorHandler : handleError);
+    .then(c => {
+      c[action].apply(c[action], args).catch(handler);
+    })
+    .catch(handler);
 }
 
 function getAuthorization(account) {
@@ -42,47 +52,68 @@ function getTableRowsInternal(code, scope, table, callback) {
   }
 }
 
-function getTables(callback) {
-  getTableRowsInternal("vol.profile", "vol.profile", "profile", profiles => {
-    if (profiles.rows.length > 0) {
-      const promises = [];
-      for (var i = 0; i < profiles.rows.length; i++) {
-        promises.push(
-          getTableRowsInternal(
-            "vol.token",
-            profiles.rows[i].account,
-            "accounts"
-          )
-        );
-        promises.push(
-          getTableRowsInternal(
-            "vol.request",
-            profiles.rows[i].account,
-            "request"
-          )
-        );
-      }
-      Promise.all(promises)
-        .then(function(values) {
-          const requests = {
-            rows: []
-          };
+function getTable(constract, table) {
+  const promises = [];
+  for (let i = 0; i < accounts.length; i++) {
+    promises.push(getTableRowsInternal(constract, accounts[i], table));
+  }
+  return Promise.all(promises);
+}
 
-          for (var i = 0; i < values.length; i++) {
-            const rows = values[i].rows;
-            if (i % 2 === 0) {
-              profiles.rows[i / 2].balance = rows[0].balance;
-            } else {
-              for (var j = 0; j < rows.length; j++) {
-                requests.rows.push(rows[j]);
-              }
-            }
+function getTables(callback) {
+  const profile_promise = getTable("vol.profile", "profiles");
+  const profile_field_promise = getTable("vol.profile", "fields");
+  const token_promise = getTable("vol.token", "accounts");
+  const request_promise = getTable("vol.request", "request");
+
+  Promise.all([
+    profile_promise,
+    profile_field_promise,
+    token_promise,
+    request_promise
+  ])
+    .then(values => {
+      const profiles = values[0];
+      const profile_fields = values[1];
+      const tokens = values[2];
+      const requests = values[3];
+
+      const result = {
+        profiles: [],
+        profile_fields: [],
+        requests: [],
+        tokens: []
+      };
+
+      for (let i = 0; i < accounts.length; i++) {
+        const account = accounts[i];
+        const profile = profiles[i];
+        const profile_field = profile_fields[i];
+        const token = tokens[i];
+        const request = requests[i];
+        if (profile.rows.length > 0) {
+          if (token.rows.length > 0) {
+            profile.rows[0].balance = token.rows[0].balance;
           }
-          callback(profiles, requests);
-        })
-        .catch(handleError);
-    }
-  });
+          result.profiles.push(profile.rows[0]);
+        }
+        if (token.rows.length > 0 && profile.rows.length == 0) {
+          const row = token.rows[0];
+          row.account = account;
+          result.tokens.push(row);
+        }
+        for (let j = 0; j < profile_field.rows.length; j++) {
+          const row = profile_field.rows[j];
+          row.account = account;
+          result.profile_fields.push(row);
+        }
+        for (let j = 0; j < request.rows.length; j++) {
+          result.requests.push(request.rows[j]);
+        }
+      }
+      callback(result);
+    })
+    .catch(handleError);
 }
 
 module.exports = {

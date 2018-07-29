@@ -20,6 +20,8 @@ public:
 
   typedef eosio::multi_index<N(request), request_tbl> request_idx;
 
+  // todo make sure that profile exists!
+
   /// @abi action
   void create(const account_name& requester, const account_name& requestee,
               const eosio::asset& payment, const std::string& memo);

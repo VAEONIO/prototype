@@ -1,7 +1,6 @@
 const token = require("./token.js");
 const profile = require("./profile.js");
 const request = require("./request.js");
-const fs = require("fs");
 
 if (fs.existsSync(__dirname + "/../build/NEW")) {
   fs.unlinkSync(__dirname + "/../build/NEW");

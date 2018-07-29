@@ -1,3 +1,4 @@
 Language: Cpp
 ColumnLimit: 100
 PointerAlignment: Left
+AlwaysBreakTemplateDeclarations: true

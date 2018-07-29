@@ -5,6 +5,9 @@ const io = require("socket.io")(http);
 
 const profile = require("./profile.js");
 const common = require("./common.js");
+const init = require("./init.js");
+
+init();
 
 app.get("/", function(req, res) {
   res.sendFile(__dirname + "/public/index.html");
@@ -21,9 +24,7 @@ app.use("", express.static(__dirname + "/public"));
 
 io.on("connection", function(socket) {
   setInterval(function() {
-    common.getTables((tables, requests) =>
-      socket.emit("update", tables, requests)
-    );
+    common.getTables(tables => socket.emit("update", tables));
   }, 1000);
 
   function errorHandler(error) {
@@ -31,14 +32,12 @@ io.on("connection", function(socket) {
   }
 
   socket.on("action", function(data) {
-    const args = data.args;
-    args.push({ authorization: data.auth });
     common.execute(
       data.contract,
-      c => {
-        c[data.action].apply(c[data.action], args).catch(errorHandler);
-      },
-      errorHandler
+      data.action,
+      errorHandler,
+      data.auth,
+      ...data.args
     );
   });
 });

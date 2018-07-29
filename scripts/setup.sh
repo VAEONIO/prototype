@@ -54,6 +54,7 @@ for account in "${accounts[@]}"; do
 	echo "key created - " $private_key " - " $public_key
 
 	echo $private_key >>$build_dir/private_keys.txt
+	echo $account >>$build_dir/accounts.txt
 
 	$cleos wallet import -n $account --private-key $private_key >/dev/null
 
@@ -66,6 +67,8 @@ done
 $cleos wallet import -n vol.request --private-key ${private_keys[flo]} >/dev/null
 
 $cleos set account permission flo active '{"threshold": 1,"keys": [{"key": "'${public_keys[vol.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vol.request","permission":"eosio.code"},"weight":1}]}' owner -p flo@active
+$cleos set account permission andi active '{"threshold": 1,"keys": [{"key": "'${public_keys[vol.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vol.request","permission":"eosio.code"},"weight":1}]}' owner -p andi@active
+$cleos set account permission vol.cash active '{"threshold": 1,"keys": [{"key": "'${public_keys[vol.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vol.request","permission":"eosio.code"},"weight":1}]}' owner -p vol.cash@active
 
 $cleos set account permission vol.request active '{"threshold": 1,"keys": [{"key": "'${public_keys[vol.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vol.request","permission":"eosio.code"},"weight":1}]}' owner -p vol.request@active
 

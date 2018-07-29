@@ -134,7 +134,7 @@ $(document).ready(function() {
       .find(":selected")
       .data("action");
 
-    let cmd = action.contract + " " + action.name + " '";
+    let cmd = action.contract + " " + action.name + " '{";
     for (let i = 0; i < action.args.length; i++) {
       let arg = action.args[i];
       if (i > 0) {
@@ -142,7 +142,7 @@ $(document).ready(function() {
       }
       cmd += '"' + arg.name + '": ' + $("#actionInput_" + arg.name).val();
     }
-    cmd += "' " + $("#actionInput_authentification").val();
+    cmd += "}' -p " + $("#actionInput_authentification").val();
     $("#cmd").text(cmd);
   }
 

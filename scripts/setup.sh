@@ -31,7 +31,7 @@ $nodeos -e -p eosio --plugin eosio::chain_api_plugin --plugin eosio::history_api
 # wait for nodeos to start
 sleep 1
 
-accounts=(flo andi vae.token vae.profile vae.request vae.cash)
+accounts=(flo andi vae.token vaeon vae.cash)
 declare -A passwords
 declare -A private_keys
 declare -A public_keys
@@ -64,39 +64,28 @@ for account in "${accounts[@]}"; do
 	$cleos create account eosio $account $public_key $public_key >/dev/null
 done
 
-$cleos wallet import -n vae.request --private-key ${private_keys[flo]} >/dev/null
+$cleos wallet import -n vaeon --private-key ${private_keys[flo]} >/dev/null
 
-$cleos set account permission flo active '{"threshold": 1,"keys": [{"key": "'${public_keys[vae.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vae.request","permission":"eosio.code"},"weight":1}]}' owner -p flo@active
-$cleos set account permission andi active '{"threshold": 1,"keys": [{"key": "'${public_keys[vae.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vae.request","permission":"eosio.code"},"weight":1}]}' owner -p andi@active
-$cleos set account permission vae.cash active '{"threshold": 1,"keys": [{"key": "'${public_keys[vae.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vae.request","permission":"eosio.code"},"weight":1}]}' owner -p vae.cash@active
+$cleos set account permission flo active '{"threshold": 1,"keys": [{"key": "'${public_keys[vaeon]}'","weight": 1}],"accounts": [{"permission":{"actor":"vaeon","permission":"eosio.code"},"weight":1}]}' owner -p flo@active
+$cleos set account permission andi active '{"threshold": 1,"keys": [{"key": "'${public_keys[vaeon]}'","weight": 1}],"accounts": [{"permission":{"actor":"vaeon","permission":"eosio.code"},"weight":1}]}' owner -p andi@active
+$cleos set account permission vae.cash active '{"threshold": 1,"keys": [{"key": "'${public_keys[vaeon]}'","weight": 1}],"accounts": [{"permission":{"actor":"vaeon","permission":"eosio.code"},"weight":1}]}' owner -p vae.cash@active
 
-$cleos set account permission vae.request active '{"threshold": 1,"keys": [{"key": "'${public_keys[vae.request]}'","weight": 1}],"accounts": [{"permission":{"actor":"vae.request","permission":"eosio.code"},"weight":1}]}' owner -p vae.request@active
+$cleos set account permission vaeon active '{"threshold": 1,"keys": [{"key": "'${public_keys[vaeon]}'","weight": 1}],"accounts": [{"permission":{"actor":"vaeon","permission":"eosio.code"},"weight":1}]}' owner -p vaeon@active
 
 #token contract
 $cleos set contract vae.token $dir/../../eos/build/contracts/eosio.token
 
-#profile contract
-mkdir -p $build_dir/profile
+#vaeon contract
+mkdir -p $build_dir/vaeon
 
 # hack because of buggy eosiocpp
 cp -Rf $dir/../contracts $dir/../../eos/contracts
 cd $dir/../../eos
-$eosiocpp -g $build_dir/profile/profile.abi contracts/contracts/profile.hpp
+$eosiocpp -g $build_dir/vaeon/vaeon.abi contracts/contracts/vaeon.hpp
 
-#/usr/local/eosio/bin/eosiocpp -g $dir/../build/profile/profile.abi $dir/../contracts/profile.hpp
-$eosiocpp -o $build_dir/profile/profile.wast contracts/contracts/profile.cpp
+#/usr/local/eosio/bin/eosiocpp -g $dir/../build/vaeon/vaeon.abi $dir/../contracts/vaeon.hpp
+$eosiocpp -o $build_dir/vaeon/vaeon.wast contracts/contracts/vaeon.cpp
 
-$cleos set contract vae.profile $build_dir/profile
-
-#request contract
-mkdir -p $build_dir/request
-
-# hack because of buggy eosiocpp
-$eosiocpp -g $build_dir/request/request.abi contracts/contracts/request.hpp
-
-#/usr/local/eosio/bin/eosiocpp -g $dir/../build/profile/profile.abi $dir/../contracts/profile.hpp
-$eosiocpp -o $build_dir/request/request.wast contracts/contracts/request.cpp
-
-$cleos set contract vae.request $build_dir/request
+$cleos set contract vaeon $build_dir/vaeon
 
 touch $build_dir/NEW

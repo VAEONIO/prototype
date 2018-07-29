@@ -21,8 +21,8 @@ class Action {
 var actions = [
   new Action(
     "profile",
-    "vae.profile",
-    "create",
+    "vaeon",
+    "createprof",
     [
       new Argument("account", "flo"),
       new Argument("first_name", { value: "Flo", price: 0 }),
@@ -33,8 +33,8 @@ var actions = [
   ),
   new Action(
     "profile",
-    "vae.profile",
-    "update",
+    "vaeon",
+    "updateprof",
     [
       new Argument("account", "flo"),
       new Argument("first_name", { value: "Florian", price: 0 }),
@@ -47,8 +47,8 @@ var actions = [
   ),
   new Action(
     "profile",
-    "vae.profile",
-    "remove",
+    "vaeon",
+    "removeprof",
     [new Argument("account_name", "flo")],
     "flo@active"
   ),
@@ -87,8 +87,8 @@ var actions = [
   ),
   new Action(
     "request",
-    "vae.request",
-    "create",
+    "vaeon",
+    "createreq",
     [
       new Argument("requester", "flo"),
       new Argument("requestee", "andi"),
@@ -99,8 +99,8 @@ var actions = [
   ),
   new Action(
     "request",
-    "vae.request",
-    "accept",
+    "vaeon",
+    "acceptreq",
     [
       new Argument("requester", "flo"),
       new Argument("requestee", "andi"),
@@ -110,8 +110,8 @@ var actions = [
   ),
   new Action(
     "request",
-    "vae.request",
-    "reject",
+    "vaeon",
+    "rejectreq",
     [
       new Argument("requester", "flo"),
       new Argument("requestee", "andi"),

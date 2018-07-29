@@ -32,8 +32,8 @@ module.exports = () => {
       "memo"
     );
     communication.execute(
-      "vae.profile",
-      "create",
+      "vaeon",
+      "createprof",
       undefined,
       "flo@active",
       "flo",
@@ -54,8 +54,8 @@ module.exports = () => {
       ]
     );
     communication.execute(
-      "vae.profile",
-      "create",
+      "vaeon",
+      "createprof",
       undefined,
       "andi@active",
       "andi",

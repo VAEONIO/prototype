@@ -61,10 +61,10 @@ function getTable(constract, table) {
 }
 
 function getTables(callback) {
-  const profile_promise = getTable("vae.profile", "profiles");
-  const profile_field_promise = getTable("vae.profile", "fields");
+  const profile_promise = getTable("vaeon", "profiles");
+  const profile_field_promise = getTable("vaeon", "fields");
   const token_promise = getTable("vae.token", "accounts");
-  const request_promise = getTable("vae.request", "request");
+  const request_promise = getTable("vaeon", "requests");
 
   Promise.all([
     profile_promise,

@@ -1,5 +1,6 @@
 #include "vaeon.hpp"
 
+#include <algorithm>
 #include <functional>
 
 #include "common.hpp"
@@ -9,17 +10,13 @@ namespace vaeon {
 using namespace std::placeholders;
 
 void update_field(field& old_field, const named_string_field& new_field) {
-  old_field.idx = std::hash<std::string>{}(new_field.name);
-  old_field.name = new_field.name;
-  old_field.value = new_field.value;
-  old_field.price = new_field.price;
+  old_field.set(new_field.name, new_field.value, new_field.price);
 }
 
 void create_or_update(const account_name& payer, field_idx& fields,
                       const std::vector<named_string_field>& string_fields) {
-  std::hash<std::string> hash_fn;
   for (const auto& string_field : string_fields) {
-    uint64_t idx = hash_fn(string_field.name);
+    uint64_t idx = field::get_idx(string_field.name);
     auto field_to_update = fields.find(idx);
     if (field_to_update == fields.end()) {
       fields.emplace(payer, std::bind(update_field, _1, string_field));
@@ -92,34 +89,42 @@ void has_enough_assets(const account_name& requester, const eosio::asset& paymen
 }
 
 void vaeon::createreq(const account_name& requester, const account_name& requestee,
-                      const eosio::asset& payment, const std::string& memo) {
+                      const eosio::asset& payment, const std::string& public_key,
+                      const std::vector<std::string>& field_names, const std::string& memo) {
   eosio_assert(requester != requestee, "cannot request from yourself");
   require_auth(requester);
   eosio_assert(is_account(requestee), "requestee account does not exist");
+  require_recipient(requestee);
+  profile_idx profiles(_self, requestee);
+  eosio_assert(profiles.begin() != profiles.end(), "requestee profile does not exist");
+
+  // TODO: Change to unordered_set once supported.
+  std::set<std::string> preset_fields = {"first_name", "last_name"};
+  field_idx fields(_self, requestee);
+  for (const auto& field_name : field_names) {
+    eosio_assert(preset_fields.find(field::normalize_name(field_name)) != preset_fields.end() ||
+                     fields.find(field::get_idx(field_name)) != fields.end(),
+                 "field does not exist");
+  }
 
   request_idx requests(_self, requester);
   auto r = requests.find(requestee);
   eosio_assert(r == requests.end(), "there is already a request in place");
 
-  // todo require_recipient
-
   SEND_INLINE_ACTION(eosio::token(N(vae.token)), transfer, {requester, N(active)},
                      {requester, N(vae.cash), payment, memo});
 
-  requests.emplace(_self, [&](auto& r) {
-    r.requester = requester;
-    r.requestee = requestee;
-    r.payment = payment;
-    r.memo = memo;
-  });
+  requests.emplace(
+      _self, [&](auto& r) { r.set(requester, requestee, payment, public_key, field_names, memo); });
 }
 
 void vaeon::acceptreq(const account_name& requester, const account_name& requestee,
-                      const std::string& memo) {
+                      const std::vector<std::string>& field_keys, const std::string& memo) {
   require_auth(requestee);
   request_idx requests(_self, requester);
   auto r = requests.find(requestee);
   eosio_assert(r != requests.end(), "request does not exist");
+  eosio_assert(field_keys.size() == r->field_names.size(), "wrong number of keys provided");
 
   SEND_INLINE_ACTION(eosio::token(N(vae.token)), transfer, {N(vae.cash), N(active)},
                      {N(vae.cash), requestee, r->payment, memo});

@@ -34,11 +34,12 @@ public:
   // todo make sure that profile exists!
   /// @abi action
   void createreq(const account_name& requester, const account_name& requestee,
-                 const eosio::asset& payment, const std::string& memo);
+                 const eosio::asset& payment, const std::string& public_key,
+                 const std::vector<std::string>& fields, const std::string& memo);
 
   /// @abi action
   void acceptreq(const account_name& requester, const account_name& requestee,
-                 const std::string& memo);
+                 const std::vector<std::string>& field_keys, const std::string& memo);
 
   /// @abi action
   void rejectreq(const account_name& requester, const account_name& requestee,

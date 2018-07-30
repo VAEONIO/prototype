@@ -91,6 +91,8 @@ var actions = [
       new Argument("requester", "flo"),
       new Argument("requestee", "andi"),
       new Argument("payment", "100 VAE"),
+      new Argument("public_key", "KEY_SKDFASDJLAS"),
+      new Argument("field_names", ["Last_Name", "age"]),
       new Argument("memo", "gimme dat data")
     ],
     "flo@active",
@@ -102,14 +104,15 @@ var actions = [
     [
       new Argument("requester", "flo"),
       new Argument("requestee", "andi"),
+      new Argument("field_keys", ["KEY_IUBMAHGTZQ", "KEY_ALJSLKLJAJ"]),
       new Argument("memo", "cool!")
     ],
     "andi@active",
-    "create profile"
+    "accept request"
   ),
   new Action(
     "vaeon",
-    "accept request",
+    "rejectreq",
     [
       new Argument("requester", "flo"),
       new Argument("requestee", "andi"),

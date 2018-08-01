@@ -1,5 +1,4 @@
 .DS_Store
 build/
 runtime/
-CMakeLists.txt
 server/node_modules/

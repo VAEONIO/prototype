@@ -2,4 +2,4 @@
 build/
 runtime/
 CMakeLists.txt
-src/node_modules/
+server/node_modules/

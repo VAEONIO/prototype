@@ -89,3 +89,5 @@ $cleos set contract vaeon $build_dir/vaeon
 $cleos set contract vae.token $dir/../../eos/build/contracts/eosio.token
 
 touch $build_dir/NEW
+
+node $dir/../server/app.js

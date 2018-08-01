@@ -55,13 +55,19 @@ void vaeon::removeprof(const account_name& account) {
   field_idx fields(_self, account);
   profiles.erase(profile);
 
-  auto fields_itr = fields.begin();
-  while (fields_itr != fields.end()) {
-    fields_itr = fields.erase(fields_itr);
+  auto field_itr = fields.begin();
+  while (field_itr != fields.end()) {
+    field_itr = fields.erase(field_itr);
   }
 
   request_idx requests(_self, account);
-  request_in_idx requests_in(_self, account);
+  auto request_itr = requests.begin();
+  while (request_itr != requests.end()) {
+    account_name requestee = request_itr->requestee;
+    request_itr++;
+    cancelreq(account, requestee);
+  }
+  // TODO: remove incoming requests
 }
 
 void vaeon::updateprof(const account_name& account, const string_field& first_name,

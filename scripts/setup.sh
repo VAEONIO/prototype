@@ -31,7 +31,7 @@ $nodeos -e -p eosio --plugin eosio::chain_api_plugin --plugin eosio::history_api
 # wait for nodeos to start
 sleep 1
 
-accounts=(flo andi vae.token vaeon vae.cash)
+accounts=(flo andi vae.token vaeon vae.cash vae.fee)
 declare -A passwords
 declare -A private_keys
 declare -A public_keys
@@ -72,9 +72,6 @@ $cleos set account permission vae.cash active '{"threshold": 1,"keys": [{"key": 
 
 $cleos set account permission vaeon active '{"threshold": 1,"keys": [{"key": "'${public_keys[vaeon]}'","weight": 1}],"accounts": [{"permission":{"actor":"vaeon","permission":"eosio.code"},"weight":1}]}' owner -p vaeon@active
 
-#token contract
-$cleos set contract vae.token $dir/../../eos/build/contracts/eosio.token
-
 #vaeon contract
 mkdir -p $build_dir/vaeon
 
@@ -87,5 +84,8 @@ $eosiocpp -g $build_dir/vaeon/vaeon.abi contracts/contracts/vaeon.hpp
 $eosiocpp -o $build_dir/vaeon/vaeon.wast contracts/contracts/vaeon.cpp
 
 $cleos set contract vaeon $build_dir/vaeon
+
+#token contract
+$cleos set contract vae.token $dir/../../eos/build/contracts/eosio.token
 
 touch $build_dir/NEW

@@ -120,6 +120,13 @@ var actions = [
     ],
     "andi@active",
     "reject request"
+  ),
+  new Action(
+    "vaeon",
+    "cancelreq",
+    [new Argument("requester", "flo"), new Argument("requestee", "andi")],
+    "flo@active",
+    "cancel request"
   )
 ];
 

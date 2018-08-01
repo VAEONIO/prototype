@@ -44,6 +44,9 @@ public:
   /// @abi action
   void rejectreq(const account_name& requester, const account_name& requestee,
                  const std::string& memo);
+
+  /// @abi action
+  void cancelreq(const account_name& requester, const account_name& requestee);
 };
 
 } // namespace vaeon

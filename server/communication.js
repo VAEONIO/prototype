@@ -52,63 +52,58 @@ function getTableRowsInternal(code, scope, table, callback) {
   }
 }
 
-function getTable(constract, table) {
+class Table {
+  constructor(contract, name, processor) {
+    this.contract = contract;
+    this.name = name;
+    this.processor = processor;
+  }
+}
+
+function queryTable(table) {
   const promises = [];
   for (let i = 0; i < accounts.length; i++) {
-    promises.push(getTableRowsInternal(constract, accounts[i], table));
+    promises.push(
+      getTableRowsInternal(table.contract, accounts[i], table.name)
+    );
   }
   return Promise.all(promises);
 }
 
+function process(data, output) {
+  for (let i = 0; i < data.rows.length; i++) {
+    output.push(data.rows[i]);
+  }
+}
+
+function processAddAccount(data, output, account) {
+  for (let i = 0; i < data.rows.length; i++) {
+    const row = data.rows[i];
+    row.account = account;
+    output.push(row);
+  }
+}
+
 function getTables(callback) {
-  const profile_promise = getTable("vaeon", "profiles");
-  const profile_field_promise = getTable("vaeon", "fields");
-  const token_promise = getTable("vae.token", "accounts");
-  const request_promise = getTable("vaeon", "requests");
+  const tables = [
+    new Table("vaeon", "profiles", process),
+    new Table("vaeon", "fields", processAddAccount),
+    new Table("vae.token", "accounts", processAddAccount),
+    new Table("vaeon", "requests", process),
+    new Table("vaeon", "reqin", processAddAccount),
+    new Table("vaeon", "reqdone", processAddAccount)
+  ];
 
-  Promise.all([
-    profile_promise,
-    profile_field_promise,
-    token_promise,
-    request_promise
-  ])
+  Promise.all(tables.map(t => queryTable(t)))
     .then(values => {
-      const profiles = values[0];
-      const profile_fields = values[1];
-      const tokens = values[2];
-      const requests = values[3];
-
-      const result = {
-        profiles: [],
-        profile_fields: [],
-        requests: [],
-        tokens: []
-      };
-
-      for (let i = 0; i < accounts.length; i++) {
-        const account = accounts[i];
-        const profile = profiles[i];
-        const profile_field = profile_fields[i];
-        const token = tokens[i];
-        const request = requests[i];
-        if (profile.rows.length > 0) {
-          if (token.rows.length > 0) {
-            profile.rows[0].balance = token.rows[0].balance;
-          }
-          result.profiles.push(profile.rows[0]);
-        }
-        if (token.rows.length > 0 && profile.rows.length == 0) {
-          const row = token.rows[0];
-          row.account = account;
-          result.tokens.push(row);
-        }
-        for (let j = 0; j < profile_field.rows.length; j++) {
-          const row = profile_field.rows[j];
-          row.account = account;
-          result.profile_fields.push(row);
-        }
-        for (let j = 0; j < request.rows.length; j++) {
-          result.requests.push(request.rows[j]);
+      const result = {};
+      for (let i = 0; i < tables.length; i++) {
+        const table = tables[i];
+        const outputTableName = tables[i].contract + "/" + tables[i].name;
+        result[outputTableName] = [];
+        for (let j = 0; j < accounts.length; j++) {
+          const data = values[i][j];
+          table.processor(data, result[outputTableName], accounts[j]);
         }
       }
       callback(result);

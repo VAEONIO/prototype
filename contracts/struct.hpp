@@ -71,7 +71,7 @@ struct request_in {
   void set(const account_name& requester) { this->requester = requester; }
   EOSLIB_SERIALIZE(request_in, (requester))
 };
-typedef eosio::multi_index<N(requests_in), request_in> request_in_idx;
+typedef eosio::multi_index<N(reqin), request_in> request_in_idx;
 
 /**
  * @abi table requests i64
@@ -105,12 +105,12 @@ typedef eosio::multi_index<N(requests), request> request_idx;
 /**
  * @abi table reqdone i64
  */
-struct req_done {
+struct request_done {
   uint64_t key;
   eosio::asset payment;
   auto primary_key() const { return key; }
   EOSLIB_SERIALIZE(req_done, (key)(payment))
 };
-typedef eosio::multi_index<N(req_done), req_done> request_done_idx;
+typedef eosio::multi_index<N(reqdone), request_done> request_done_idx;
 
 } // namespace vaeon

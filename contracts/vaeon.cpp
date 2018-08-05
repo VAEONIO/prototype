@@ -13,15 +13,17 @@ void update_field(field& old_field, const named_string_field& new_field) {
   old_field.set(new_field.name, new_field.value, new_field.price);
 }
 
-void create_or_update(const account_name& payer, field_idx& fields,
-                      const std::vector<named_string_field>& string_fields) {
+void create_update_or_delete(const account_name& payer, field_idx& fields,
+                             const std::vector<named_string_field>& string_fields) {
   for (const auto& string_field : string_fields) {
     uint64_t key = field::get_key(string_field.name);
     auto field_to_update = fields.find(key);
     if (field_to_update == fields.end()) {
       fields.emplace(payer, std::bind(update_field, _1, string_field));
-    } else {
+    } else if (string_field.value != "") {
       fields.modify(field_to_update, payer, std::bind(update_field, _1, string_field));
+    } else {
+      fields.erase(field_to_update);
     }
   }
 }
@@ -43,7 +45,7 @@ void vaeon::createprof(const account_name& account, const string_field& first_na
   eosio_assert(fields.begin() == fields.end(),
                "fields exist also profile does not - this should never happen");
 
-  create_or_update(_self, fields, string_fields);
+  create_update_or_delete(_self, fields, string_fields);
 }
 
 void vaeon::removeprof(const account_name& account) {
@@ -60,6 +62,7 @@ void vaeon::removeprof(const account_name& account) {
     field_itr = fields.erase(field_itr);
   }
 
+  // remove outgoing requests
   request_idx requests(_self, account);
   auto request_itr = requests.begin();
   while (request_itr != requests.end()) {
@@ -67,7 +70,15 @@ void vaeon::removeprof(const account_name& account) {
     request_itr++;
     cancelreq(account, requestee);
   }
-  // TODO: remove incoming requests
+
+  // remove incoming requests
+  request_in_idx requests_in(_self, account);
+  auto request_in_itr = requests_in.begin();
+  while (request_in_itr != requests_in.end()) {
+    account_name requester = request_in_itr->requester;
+    request_in_itr++;
+    rejectreq(requester, account, "profile removed");
+  }
 }
 
 void vaeon::updateprof(const account_name& account, const string_field& first_name,
@@ -85,7 +96,7 @@ void vaeon::updateprof(const account_name& account, const string_field& first_na
   });
 
   field_idx fields(_self, account);
-  create_or_update(_self, fields, string_fields);
+  create_update_or_delete(_self, fields, string_fields);
 }
 
 void has_enough_assets(const account_name& requester, const eosio::asset& payment) {
@@ -128,56 +139,83 @@ void vaeon::createreq(const account_name& requester, const account_name& request
   request_in_idx(_self, requestee).emplace(_self, [&](auto& r_in) { r_in.set(requester); });
 }
 
+void vaeon::remove_request_in(const account_name& requester, const account_name& requestee) {
+  request_in_idx requests_in(_self, requestee);
+  auto r_in = requests_in.find(requester);
+  requests_in.erase(r_in);
+}
+
+void release_funds(const account_name& beneficiary, const eosio::asset& quantity, double fee_ratio,
+                   const std::string& memo) {
+  eosio::asset refund;
+  eosio::asset fee;
+  calculate_fee(quantity, refund, fee, fee_ratio);
+
+  if (refund.amount > 0) {
+    SEND_INLINE_ACTION(eosio::token(N(vae.token)), transfer, {N(vae.cash), N(active)},
+                       {N(vae.cash), beneficiary, refund, memo});
+  }
+  if (fee.amount > 0) {
+    SEND_INLINE_ACTION(eosio::token(N(vae.token)), transfer, {N(vae.cash), N(active)},
+                       {N(vae.cash), N(vae.fee), fee, memo});
+  }
+}
+
 void vaeon::acceptreq(const account_name& requester, const account_name& requestee,
                       const std::vector<std::string>& field_keys, const std::string& memo) {
   require_auth(requestee);
+  require_recipient(requester);
   request_idx requests(_self, requester);
   auto r = requests.find(requestee);
   eosio_assert(r != requests.end(), "request does not exist");
   eosio_assert(field_keys.size() == r->field_names.size(), "wrong number of keys provided");
 
-  SEND_INLINE_ACTION(eosio::token(N(vae.token)), transfer, {N(vae.cash), N(active)},
-                     {N(vae.cash), requestee, r->payment, memo});
+  // release_funds(requestee, r->payment, 0, memo);
   requests.erase(r);
-  request_in_idx requests_in(_self, requestee);
-  auto r_in = requests_in.find(requester);
-  requests_in.erase(r_in);
+  remove_request_in(requester, requestee);
+
+  request_done_idx requests_done(_self, requester);
+  requests_done.emplace(_self, [&](auto& rd) {
+    rd.key = requests_done.available_primary_key();
+    rd.payment = r->payment;
+  });
 }
 
 void vaeon::rejectreq(const account_name& requester, const account_name& requestee,
                       const std::string& memo) {
   require_auth(requestee);
+  require_recipient(requester);
   request_idx requests(_self, requester);
   auto r = requests.find(requestee);
   eosio_assert(r != requests.end(), "request does not exist");
 
-  SEND_INLINE_ACTION(eosio::token(N(vae.token)), transfer, {N(vae.cash), N(active)},
-                     {N(vae.cash), requester, r->payment, memo});
+  release_funds(requester, r->payment, request_reject_fee, memo);
   requests.erase(r);
-  request_in_idx requests_in(_self, requestee);
-  auto r_in = requests_in.find(requester);
-  requests_in.erase(r_in);
+  remove_request_in(requester, requestee);
 }
 
 void vaeon::cancelreq(const account_name& requester, const account_name& requestee) {
   require_auth(requester);
+  require_recipient(requestee);
   request_idx requests(_self, requester);
   auto r = requests.find(requestee);
   eosio_assert(r != requests.end(), "request does not exist");
 
-  eosio::asset refund;
-  eosio::asset fee;
-  calculate_fee(r->payment, refund, fee);
-
-  SEND_INLINE_ACTION(eosio::token(N(vae.token)), transfer, {N(vae.cash), N(active)},
-                     {N(vae.cash), requester, refund, "request canceled"});
-  SEND_INLINE_ACTION(eosio::token(N(vae.token)), transfer, {N(vae.cash), N(active)},
-                     {N(vae.cash), N(vae.fee), fee, "request canceled"});
+  release_funds(requester, r->payment, request_cancel_fee, "request canceled");
   requests.erase(r);
-  request_in_idx requests_in(_self, requestee);
-  auto r_in = requests_in.find(requester);
-  requests_in.erase(r_in);
+  remove_request_in(requester, requestee);
 }
 
-EOSIO_ABI(vaeon, (createprof)(removeprof)(updateprof)(createreq)(acceptreq)(rejectreq)(cancelreq))
+void vaeon::burnreq(const account_name& requester, uint64_t key, const std::string& memo) {
+  require_auth(requester);
+  request_done_idx requests_done(_self, requester);
+  auto r = requests_done.find(key);
+  eosio_assert(r != requests_done.end(), "request does not exist");
+
+  release_funds(requester, r->payment, 1.0, memo);
+  requests_done.erase(r);
+}
+
+EOSIO_ABI(vaeon,
+          (createprof)(removeprof)(updateprof)(createreq)(acceptreq)(rejectreq)(cancelreq)(burnreq))
 } // namespace vaeon

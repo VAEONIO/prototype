@@ -50,6 +50,12 @@ module.exports = () => {
           name: "Age",
           value: "29",
           price: 0
+        },
+        {
+          name: "Picture",
+          value:
+            "https://ipfs.io/ipfs/QmW2WQi7j6c7UgJTarActp7tDNikE4B2qXtFCfLPdsgaTQ/cat.jpg",
+          price: 0
         }
       ]
     );

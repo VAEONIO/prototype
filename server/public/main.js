@@ -56,7 +56,7 @@ var actions = [
     "create",
     [
       new Argument("issuer", "vae.token"),
-      new Argument("maximum supply", "100000 VAE")
+      new Argument("maximum_supply", "100000 VAE")
     ],
     "vae.token@active",
     "create token"
@@ -127,6 +127,17 @@ var actions = [
     [new Argument("requester", "flo"), new Argument("requestee", "andi")],
     "flo@active",
     "cancel request"
+  ),
+  new Action(
+    "vaeon",
+    "burnreq",
+    [
+      new Argument("requester", "flo"),
+      new Argument("key", 0),
+      new Argument("memo", "fake data!")
+    ],
+    "flo@active",
+    "burn request"
   )
 ];
 

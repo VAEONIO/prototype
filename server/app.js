@@ -8,10 +8,6 @@ const init = require("./init.js");
 
 init();
 
-app.get("/", function(req, res) {
-  res.sendFile(__dirname + "/public/index.html");
-});
-
 app.use(function(req, res, next) {
   res.header("Cache-Control", "private, no-cache, no-store, must-revalidate");
   res.header("Expires", "-1");

@@ -7,8 +7,10 @@ namespace vaeon {
 struct string_field {
   std::string value;
   int64_t price;
+  std::vector<std::string> test;
 };
 
+// Templating is not supported by the .abi generator currently.
 struct named_string_field {
   std::string name;
   std::string value;
@@ -59,6 +61,9 @@ struct field {
 };
 typedef eosio::multi_index<N(fields), field> field_idx;
 
+/**
+ * @abi table reqin i64
+ */
 struct request_in {
   account_name requester;
   auto primary_key() const { return requester; }
@@ -96,5 +101,16 @@ struct request {
   EOSLIB_SERIALIZE(request, (requester)(requestee)(payment)(public_key)(field_names)(memo))
 };
 typedef eosio::multi_index<N(requests), request> request_idx;
+
+/**
+ * @abi table reqdone i64
+ */
+struct req_done {
+  uint64_t key;
+  eosio::asset payment;
+  auto primary_key() const { return key; }
+  EOSLIB_SERIALIZE(req_done, (key)(payment))
+};
+typedef eosio::multi_index<N(req_done), req_done> request_done_idx;
 
 } // namespace vaeon

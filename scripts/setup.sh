@@ -60,7 +60,7 @@ for account in "${accounts[@]}"; do
 
 	$cleos wallet import -n $account --private-key $private_key >/dev/null
 
-	# import eosio private key
+	# import eosio private key to enable account creation
 	$cleos wallet import -n $account --private-key 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3 >/dev/null
 
 	$cleos create account eosio $account $public_key $public_key >/dev/null
@@ -69,6 +69,7 @@ done
 $cleos wallet import -n vaeon --private-key ${private_keys[flo]} >/dev/null
 
 # setup permissions so that our contract can send tokens with SEND_INLINE_ACTION
+# https://eosio.stackexchange.com/questions/1621/require-inline-action-be-sent-by-contract-and-not-account/1718
 $cleos set account permission flo active '{"threshold": 1,"keys": [{"key": "'${public_keys[vaeon]}'","weight": 1}],"accounts": [{"permission":{"actor":"vaeon","permission":"eosio.code"},"weight":1}]}' owner -p flo@active
 $cleos set account permission andi active '{"threshold": 1,"keys": [{"key": "'${public_keys[vaeon]}'","weight": 1}],"accounts": [{"permission":{"actor":"vaeon","permission":"eosio.code"},"weight":1}]}' owner -p andi@active
 $cleos set account permission vae.cash active '{"threshold": 1,"keys": [{"key": "'${public_keys[vaeon]}'","weight": 1}],"accounts": [{"permission":{"actor":"vaeon","permission":"eosio.code"},"weight":1}]}' owner -p vae.cash@active
@@ -91,4 +92,4 @@ $cleos set contract vae.token $eos_dir/build/contracts/eosio.token
 touch $build_dir/NEW
 
 # start webserver
-node $dir/../server/app.js
+#node $dir/../server/app.js

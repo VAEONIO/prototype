@@ -1,10 +1,7 @@
 #!/usr/local/bin/bash
 
-eos_bin_dir=/usr/local/eosio/bin
-eos_dir=/Users/flo/projects/eos
-# devices to pipe output to
-keosd_output_device=/dev/ttys016
-nodeos_output_device=/dev/ttys018
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+source $dir/config.sh
 
 # setup commands
 keosd_server_address="localhost:8899"
@@ -14,7 +11,6 @@ nodeos=$eos_bin_dir/nodeos
 eosiocpp=$eos_bin_dir/eosiocpp
 
 # setup directories
-dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 runtime_dir=$dir/../runtime
 build_dir=$dir/../build
 rm -rf $runtime_dir
@@ -26,9 +22,9 @@ config_dir="--config-dir $runtime_dir"
 
 # start keosd and nodeos
 pkill keosd
-$keosd --http-server-address=$keosd_server_address $config_dir >$keosd_output_device 2>&1 &
+$keosd --http-server-address=$keosd_server_address $config_dir >$keosd_device 2>&1 &
 pkill nodeos
-$nodeos -e -p eosio --plugin eosio::chain_api_plugin --plugin eosio::history_api_plugin $config_dir --delete-all-blocks >$nodeos_output_device 2>&1 &
+$nodeos -e -p eosio --plugin eosio::chain_api_plugin --plugin eosio::history_api_plugin $config_dir --delete-all-blocks >$nodeos_device 2>&1 &
 # wait for nodeos to start
 sleep 2
 

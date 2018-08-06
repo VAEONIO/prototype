@@ -8,13 +8,13 @@
 - Verify the build by running the command provided in the output of the previous command
 - Install the binaries by running `sudo make install` inside the eos build directory
 
-#### Install vaeon
+#### Setup vaeon
 - `git clone git@github.com:devgg/vaeon.git`
 - `cd server && npm install`
-
-#### Start vaeon development environment
 - `cd ..`
 - `cp scripts/config_template.sh scripts/config.sh`
+
+#### Start vaeon development environment
 - Fill in the values in `scripts/config.sh`
 - `./scripts/setup.sh`
 - `node server/app.js`

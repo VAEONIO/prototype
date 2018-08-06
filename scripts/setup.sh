@@ -25,8 +25,15 @@ pkill keosd
 $keosd --http-server-address=$keosd_server_address $config_dir >$keosd_device 2>&1 &
 pkill nodeos
 $nodeos -e -p eosio --plugin eosio::chain_api_plugin --plugin eosio::history_api_plugin $config_dir --delete-all-blocks >$nodeos_device 2>&1 &
-# wait for nodeos to start
-sleep 2
+
+# compile vaeon contract
+mkdir -p $build_dir/vaeon
+# hack because of buggy eosiocpp
+cp -Rf $dir/../contracts $eos_dir/contracts
+cd $eos_dir
+$eosiocpp -g $build_dir/vaeon/vaeon.abi contracts/contracts/vaeon.hpp
+#$eosiocpp -g $dir/../build/vaeon/vaeon.abi $dir/../contracts/vaeon.hpp
+$eosiocpp -o $build_dir/vaeon/vaeon.wast contracts/contracts/vaeon.cpp
 
 # setup accounts
 accounts=(flo andi vae.token vaeon vae.cash vae.fee)
@@ -71,16 +78,8 @@ $cleos set account permission andi active '{"threshold": 1,"keys": [{"key": "'${
 $cleos set account permission vae.cash active '{"threshold": 1,"keys": [{"key": "'${public_keys[vaeon]}'","weight": 1}],"accounts": [{"permission":{"actor":"vaeon","permission":"eosio.code"},"weight":1}]}' owner -p vae.cash@active
 $cleos set account permission vaeon active '{"threshold": 1,"keys": [{"key": "'${public_keys[vaeon]}'","weight": 1}],"accounts": [{"permission":{"actor":"vaeon","permission":"eosio.code"},"weight":1}]}' owner -p vaeon@active
 
-# compile and set vaeon contract
-mkdir -p $build_dir/vaeon
-# hack because of buggy eosiocpp
-cp -Rf $dir/../contracts $eos_dir/contracts
-cd $eos_dir
-$eosiocpp -g $build_dir/vaeon/vaeon.abi contracts/contracts/vaeon.hpp
-#$eosiocpp -g $dir/../build/vaeon/vaeon.abi $dir/../contracts/vaeon.hpp
-$eosiocpp -o $build_dir/vaeon/vaeon.wast contracts/contracts/vaeon.cpp
+# set vaeon contract
 $cleos set contract vaeon $build_dir/vaeon
-
 # set token contract
 $cleos set contract vae.token $eos_dir/build/contracts/eosio.token
 

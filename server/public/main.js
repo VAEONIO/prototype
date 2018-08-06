@@ -130,6 +130,13 @@ var actions = [
   ),
   new Action(
     "vaeon",
+    "releasereq",
+    [new Argument("requester", "flo"), new Argument("key", 0)],
+    "andi@active",
+    "release request"
+  ),
+  new Action(
+    "vaeon",
     "burnreq",
     [
       new Argument("requester", "flo"),

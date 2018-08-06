@@ -53,6 +53,10 @@ public:
   // @abi action
   void cancelreq(const account_name& requester, const account_name& requestee);
 
+  // Releases the tokens of an accepted request.
+  // @abi action
+  void releasereq(const account_name& requester, uint64_t key);
+
   // Burns the tokens of an accepted request. Disincentivize fake profiles.
   // @abi action
   void burnreq(const account_name& requester, uint64_t key, const std::string& memo);

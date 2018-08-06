@@ -7,6 +7,7 @@ namespace vaeon {
 
 constexpr double request_cancel_fee = 0.05;
 constexpr double request_reject_fee = 0.01;
+constexpr time request_release_time = 10; // 10 seconds
 
 void calculate_fee(const eosio::asset& total, eosio::asset& result, eosio::asset& fee,
                    double fee_ratio) {

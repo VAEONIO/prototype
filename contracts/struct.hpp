@@ -107,9 +107,11 @@ typedef eosio::multi_index<N(requests), request> request_idx;
  */
 struct request_done {
   uint64_t key;
+  account_name requestee;
   eosio::asset payment;
+  time release_time;
   auto primary_key() const { return key; }
-  EOSLIB_SERIALIZE(request_done, (key)(payment))
+  EOSLIB_SERIALIZE(request_done, (key)(requestee)(payment)(release_time))
 };
 typedef eosio::multi_index<N(reqdone), request_done> request_done_idx;
 

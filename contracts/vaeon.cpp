@@ -177,7 +177,9 @@ void vaeon::acceptreq(const account_name& requester, const account_name& request
   request_done_idx requests_done(_self, requester);
   requests_done.emplace(_self, [&](auto& rd) {
     rd.key = requests_done.available_primary_key();
+    rd.requestee = requestee;
     rd.payment = r->payment;
+    rd.release_time = now() + request_release_time;
   });
 }
 
@@ -206,16 +208,25 @@ void vaeon::cancelreq(const account_name& requester, const account_name& request
   remove_request_in(requester, requestee);
 }
 
+void vaeon::releasereq(const account_name& requester, uint64_t key) {
+  request_done_idx requests_done(_self, requester);
+  auto r = requests_done.find(key);
+  eosio_assert(r != requests_done.end(), "request does not exist");
+  eosio_assert(r->release_time <= now(), "release time has not been reached");
+  release_funds(r->requestee, r->payment, 0.0, "funds released");
+  requests_done.erase(r);
+}
+
 void vaeon::burnreq(const account_name& requester, uint64_t key, const std::string& memo) {
   require_auth(requester);
   request_done_idx requests_done(_self, requester);
   auto r = requests_done.find(key);
   eosio_assert(r != requests_done.end(), "request does not exist");
-
+  eosio_assert(r->release_time > now(), "release time has been reached");
   release_funds(requester, r->payment, 1.0, memo);
   requests_done.erase(r);
 }
 
-EOSIO_ABI(vaeon,
-          (createprof)(removeprof)(updateprof)(createreq)(acceptreq)(rejectreq)(cancelreq)(burnreq))
+EOSIO_ABI(vaeon, (createprof)(removeprof)(updateprof)(createreq)(acceptreq)(rejectreq)(cancelreq)(
+                     releasereq)(burnreq))
 } // namespace vaeon

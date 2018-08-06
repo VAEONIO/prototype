@@ -13,9 +13,9 @@
 - `cd server && npm install`
 - `cd ..`
 - `cp scripts/config_template.sh scripts/config.sh`
+- Fill in the values in `scripts/config.sh`
 
 #### Start vaeon development environment
-- Fill in the values in `scripts/config.sh`
 - `./scripts/setup.sh`
 - `node server/app.js`
 - Go to http://localhost:3000/ in your browser

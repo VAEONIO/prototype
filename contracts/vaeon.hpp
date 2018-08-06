@@ -1,8 +1,9 @@
 #pragma once
 
 #include <eosiolib/eosio.hpp>
-//#include <eosio.token.hpp>
 
+// TODO: Change this once compilation hack is no longer required.
+//#include <eosio.token.hpp>
 #include "../eosio.token/eosio.token.hpp"
 #include "struct.hpp"
 

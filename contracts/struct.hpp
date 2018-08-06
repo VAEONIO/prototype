@@ -109,7 +109,7 @@ struct request_done {
   uint64_t key;
   eosio::asset payment;
   auto primary_key() const { return key; }
-  EOSLIB_SERIALIZE(req_done, (key)(payment))
+  EOSLIB_SERIALIZE(request_done, (key)(payment))
 };
 typedef eosio::multi_index<N(reqdone), request_done> request_done_idx;
 

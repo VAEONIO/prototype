@@ -86,5 +86,17 @@ module.exports = () => {
         }
       ]
     );
+    communication.execute(
+      "vaeon",
+      "createreq",
+      undefined,
+      "flo@active",
+      "flo",
+      "andi",
+      "100 VAE",
+      "KEY_SKDFASDJLAS",
+      ["Last_Name", "age"],
+      "gimme dat data"
+    );
   }
 };

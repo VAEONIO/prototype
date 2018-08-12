@@ -1,11 +1,10 @@
 const fs = require("fs");
-
-const communication = require("./communication.js");
+const eos_frontend = require("eos-frontend");
 
 module.exports = () => {
   if (fs.existsSync(__dirname + "/../build/NEW")) {
     fs.unlinkSync(__dirname + "/../build/NEW");
-    communication.execute(
+    eos_frontend.execute(
       "vae.token",
       "create",
       undefined,
@@ -13,7 +12,7 @@ module.exports = () => {
       "vae.token",
       "100000 VAE"
     );
-    communication.execute(
+    eos_frontend.execute(
       "vae.token",
       "issue",
       undefined,
@@ -22,7 +21,7 @@ module.exports = () => {
       "500 VAE",
       "memo"
     );
-    communication.execute(
+    eos_frontend.execute(
       "vae.token",
       "issue",
       undefined,
@@ -31,7 +30,7 @@ module.exports = () => {
       "500 VAE",
       "memo"
     );
-    communication.execute(
+    eos_frontend.execute(
       "vaeon",
       "createprof",
       undefined,
@@ -59,7 +58,7 @@ module.exports = () => {
         }
       ]
     );
-    communication.execute(
+    eos_frontend.execute(
       "vaeon",
       "createprof",
       undefined,
@@ -86,7 +85,7 @@ module.exports = () => {
         }
       ]
     );
-    communication.execute(
+    eos_frontend.execute(
       "vaeon",
       "createreq",
       undefined,
